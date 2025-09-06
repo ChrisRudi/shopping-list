@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Einkaufsliste – iPhone16-optimiert</title>
+  <style>
+    :root {
+      --accent: #15d6e1;
+      --bg: #181c22;
+      --card: #23273a;
+      --text: #fff;
+      --inactive: #808fa3;
+      --border: #272b45;
+      --highlight: #30e5ec;
+    }
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      min-height: 100vh;
+      transition: background 0.2s;
+    }
+    header {
+      text-align: center;
+      padding: 32px 12px 12px 12px;
+    }
+    h1 { color: var(--accent); font-size: 2em; font-weight: 700; margin-bottom: 8px;}
+    .search-bar {
+      width: 100%; max-width: 420px; margin: auto; margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #search {
+      width: 100%; padding: 14px;
+      background: var(--card);
+      border-radius: 12px;
+      border: none;
+      color: var(--text);
+      font-size: 1,1em;
+      outline: none;
+    }
+    .menu {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 12px;
+    }
+    .menu-btn {
+      background: var(--card);
+      color: var(--text);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      touch-action: manipulation;
+      min-width: 48px; min-height: 48px;
+      transition: background 0.16s;
+    }
+    .menu-btn:active { background: var(--accent); color: var(--bg);}
+    .category {
+      background: var(--card);
+      border-radius: 12px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.02);
+      border: 1px solid var(--border);
+    }
+    .cat-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 18px; cursor: pointer; font-size: 1.2em; font-weight: 600;
+      color: var(--accent);
+      user-select: none;
+    }
+    .cat-header .toggle { font-size: 1.2em;}
+    .cat-items { padding: 6px 18px 12px 28px;}
+    .item-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+      min-height: 48px;
+      transition: background 0.2s;
+    }
+    .item-row:last-child { border-bottom: none;}
+    .item-row.selected {
+      background: var(--highlight); color: #111;
+      border-radius: 8px;
+    }
+    .item-row label {
+      flex: 1; font-size: 1.09em; cursor: pointer;
+    }
+    .item-amount {
+      color: var(--inactive); font-size: 0.95em; margin-right: 9px;
+    }
+    .checkbox {
+      appearance: none; width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: var(--card);
+      transition: border 0.17s;
+      cursor: pointer; position: relative;
+      margin-right: 2px;
+    }
+    .checkbox:checked {
+      background: var(--accent); border: 2px solid var(--highlight);
+    }
+    .checkbox:checked::after {
+      content: '✓';
+      color: #111;
+      position: absolute; left: 8px; top: 3px; font-size: 1.24em;
+      font-family: Arial, sans-serif;
+    }
+    .hidden { display: none !important;}
+    .status-bar {
+      position: fixed; bottom: env(safe-area-inset-bottom, 0); left: 0; right: 0;
+      background: var(--card);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: center;
+      padding: 12px 0;
+      font-size: 1.13em;
+      box-shadow: 0 -2px 7px rgba(0,0,0,0.05);
+    }
+    @media (max-width: 420px) {
+      h1 { font-size: 1.35em;}
+      .category, .cat-items, .cat-header { font-size: 1em;}
+      .menu-btn, .search-bar { font-size: 0.97em;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Einkaufsliste</h1>
+    <div class="search-bar">
+      <input id="search" type="search" placeholder="🔍 Artikel/Kategorie suchen…" autocomplete="off">
+      <button class="menu-btn" id="menu">⋯</button>
+    </div>
+    <div class="menu hidden" id="menuPopup">
+      <button class="menu-btn" id="showSelected">📋 Nur Auswahl</button>
+      <button class="menu-btn" id="sendList">📤 Auswahl senden</button>
+      <button class="menu-btn" id="resetList">🗑️ Zurücksetzen</button>
+    </div>
+  </header>
+  <main id="list"></main>
+  <div class="status-bar" id="statusBar"></div>
+  <script>
+    // CSV-Daten aus dem Anhang
+    const csv = `Kategorie,Menge,Bezeichnung
+Obst & Gemüse,"1,2 kg",BILLA Brokkoli frisch
+,"1,0 kg",BILLA Blumenkohl
+,"1,5 kg",BILLA Zucchini
+,600 g,BILLA Spinat  (oder BILLA Bio Blattspinat TK 2×)
+,6 Stk,BILLA Paprika Mix
+,500 g,BILLA Champignons
+,250 g,BILLA Rucola
+,6 Stk,BILLA Tomaten
+,2 Stk,BILLA Gurken
+,6 Stk,BILLA Zwiebeln
+,,Knoblauch 1 Knolle
+,4 Stk,BILLA Zitronen
+,1 kg,BILLA Beeren-Mix TK
+,2 Stk,Avocado
+,1 Bund,"BILLA Petersilie, Dill, Schnittlauch je"
+Milchprodukte & Eier,500 g,BILLA Skyr natur  Becher ()
+,1 kg,BILLA Magerquark
+,1 kg,BILLA Griechisches Joghurt 10%
+,500 g,BILLA Cottage Cheese (Hüttenkäse)
+,200 g,BILLA Gouda 6 Monate gereift
+,150 g,BILLA Parmesan am Stück
+,20 Stk,BILLA Freilandeier
+,250 g,Ja! Natürlich Weidebutter
+Fleisch & Fisch,"1,6 kg",BILLA Hühnerfilet
+,800 g,BILLA Rind Faschiertes mager
+,600 g,BILLA Lachsfilet TK
+,600 g,BILLA Seehechtfilet TK
+,500 g,BILLA Garnelen geschält TK
+,3 Dosen,BILLA Thunfisch in Wasser
+,1 Glas,BILLA Sardellenfilets
+Vorrat & Feinkost,200 g,BILLA Grüne Oliven entsteint
+,1 Glas,BILLA Pesto alla Genovese (zuckerarm)
+,500 ml,BILLA Passierte Tomaten
+,250 ml,BILLA Sojasauce
+,500 ml,BILLA Bio Olivenöl Extra Vergine
+,250 ml,BILLA Kokosö
+,200 g,BILLA Bio Leinsamen  oder Chiasamen
+,150 g,BILLA Pekannüsse
+,150 g,BILLA Paranüsse
+,100 g,Kakao-Nibs
+,,"Gewürze: Salz, Pfeffer, Paprika, Chili, Knoblauchpulver, Zimt"
+,,Süßstoff / FlavDrops
+,270 g,Kajnok Slim Nudeln  (Konjaknudeln)
+Tiefkühl,450 g,BILLA Bio Blattspinat  ()
+,2 Beutel,BILLA Blumenkohlreis TK
+,1 kg,BILLA Beeren-Mix TK`;
+
+    // CSV nach Kategorie parsen:
+    function parseCSV(data) {
+      const lines = data.split('\n').slice(1);
+      const categories = {};
+      let currentCat = '';
+      for (const line of lines) {
+        let [cat, menge, bez] = line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g).map(s => s.replace(/^"|"$/g, '').trim());
+        if (cat) currentCat = cat;
+        if (!categories[currentCat]) categories[currentCat] = [];
+        if (bez) categories[currentCat].push({ amount: menge, name: bez });
+      }
+      return categories;
+    }
+    const categories = parseCSV(csv);
+
+    // localStorage, filter, status & Rendering
+    let selected = JSON.parse(localStorage.getItem('ek_selected') || '{}');
+    let collapsed = JSON.parse(localStorage.getItem('ek_collapsed') || '{}');
+    let filter = '';
+    let onlySelected = false;
+
+    function saveLocal() {
+      localStorage.setItem('ek_selected', JSON.stringify(selected));
+      localStorage.setItem('ek_collapsed', JSON.stringify(collapsed));
+    }
+
+    function renderList() {
+      const main = document.getElementById('list');
+      main.innerHTML = '';
+      let totalVisible = 0, selectedCount = 0;
+      Object.entries(categories).forEach(([cat, items]) => {
+        // Kategorie-Filter
+        const catItems = items.filter(itm => {
+          if (!filter) return true;
+          let txt = (itm.name + ' ' + itm.amount).toLowerCase() + ' ' + cat.toLowerCase();
+          return txt.includes(filter.toLowerCase());
+        });
+        if (!catItems.length) return;
+        // Filter: Nur Auswahl-Modus
+        const visItems = onlySelected ? catItems.filter(itm => selected[cat+'|'+itm.name]) : catItems;
+        if (!visItems.length) return;
+        totalVisible += visItems.length;
+        // Kategorie-Card
+        const catDiv = document.createElement('div');
+        catDiv.className = 'category';
+        const chevron = collapsed[cat] ? '▼' : '▲';
+        catDiv.innerHTML = `
+          <div class="cat-header" data-cat="${cat}">
+            <span>${cat}</span>
+            <span class="toggle">${chevron}</span>
+          </div>
+          <div class="cat-items${collapsed[cat] ? ' hidden' : ''}"></div>
+        `;
+        const itemContainer = catDiv.querySelector('.cat-items');
+        visItems.forEach(item => {
+          const itKey = cat+'|'+item.name;
+          const checked = !!selected[itKey];
+          if (checked) selectedCount++;
+          const row = document.createElement('div');
+          row.className = 'item-row' + (checked ? ' selected' : '');
+          row.innerHTML = `
+            <input type="checkbox" class="checkbox" id="${itKey}" ${checked ? 'checked':''}>
+            <label for="${itKey}">
+              <span class="item-amount">${item.amount ? item.amount : ''}</span>
+              ${item.name}
+            </label>
+          `;
+          // Touch-friendly
+          row.querySelector('.checkbox').style.minWidth = '48px';
+          row.querySelector('.checkbox').style.minHeight = '48px';
+          itemContainer.appendChild(row);
+        });
+        main.appendChild(catDiv);
+      });
+      // Status-Bar
+      document.getElementById('statusBar').textContent =
+        `${selectedCount} ausgewählt · ${totalVisible} sichtbar`;
+      // Liste Interaktionen
+      document.querySelectorAll('.cat-header').forEach(head => {
+        head.onclick = () => {
+          let cat = head.dataset.cat;
+          collapsed[cat] = !collapsed[cat];
+          saveLocal();
+          renderList();
+        };
+      });
+      document.querySelectorAll('.checkbox').forEach(cb => {
+        cb.onchange = (e) => {
+          selected[e.target.id] = cb.checked;
+          saveLocal();
+          renderList();
+        };
+      });
+    }
+
+    // Suchfeld
+    document.getElementById('search').oninput = (e) => {
+      filter = e.target.value;
+      renderList();
+    };
+
+    // Menü
+    const menu = document.getElementById('menuPopup');
+    document.getElementById('menu').onclick = () => {
+      menu.classList.toggle('hidden');
+    };
+
+    document.getElementById('showSelected').onclick = () => {
+      onlySelected = !onlySelected;
+      renderList();
+      menu.classList.add('hidden');
+    };
+    document.getElementById('sendList').onclick = async () => {
+      // Export als Text
+      let out = Object.entries(selected)
+        .filter(([_, v]) => v)
+        .map(([k, _]) => {
+          let [cat, name] = k.split('|');
+          return `${name} (${cat})`;
+        }).join('\n');
+      if (navigator.share) {
+        await navigator.share({ title: 'Meine Einkaufsliste', text: out });
+      } else {
+        window.location = 'mailto:?subject=Einkaufsliste&body=' + encodeURIComponent(out);
+      }
+      menu.classList.add('hidden');
+    };
+    document.getElementById('resetList').onclick = () => {
+      selected = {};
+      filter = '';
+      onlySelected = false;
+      saveLocal();
+      renderList();
+      menu.classList.add('hidden');
+      document.getElementById('search').value = '';
+    };
+
+    renderList();
+  </script>
+</body>
+</html>
