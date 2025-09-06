@@ -129,6 +129,57 @@
       .menu-btn, .search-bar { font-size: 0.97em;}
     }
   </style>
+
+  <style id="compact-tweaks">
+    /* --- Compact / iPhone-optimized tweaks --- */
+    html, body { font-size: 18px; } /* larger base font */
+    header { padding: 20px 12px 8px 12px; }
+    h1 { font-size: 1.6em; margin: 0 0 6px 0; }
+    .search-bar { max-width: 420px; margin-bottom: 12px; }
+    #search { padding: 12px 14px; font-size: 1.05em; }
+    .menu { gap: 12px; margin-bottom: 8px; }
+    .menu-btn { padding: 10px 14px; font-size: 1.05em; }
+
+    .category { margin-bottom: 12px; border-radius: 10px; }
+    .cat-header { padding: 10px 14px; font-size: 1.05em; }
+    .cat-items { padding: 2px 14px 6px 20px; }
+
+    /* Aim for ~10 items per viewport on iPhone heights (~844px).
+       Use a compact row with slightly larger text. */
+    .item-row { 
+      padding: 6px 0; 
+      min-height: 64px; 
+    }
+    .item-row label { 
+      font-size: 1.12em; 
+      line-height: 1.15; 
+    }
+    .item-amount { 
+      font-size: 1.02em; 
+      margin-right: 8px; 
+    }
+    .checkbox { 
+      width: 28px; 
+      height: 28px; 
+    }
+    .checkbox:checked::after { 
+      left: 7px; 
+      top: 1px; 
+      font-size: 1.2em; 
+    }
+
+    .status-bar { 
+      font-size: 1.05em; 
+      padding: 10px 0; 
+    }
+
+    /* On very small widths, keep fonts generous rather than shrinking further */
+    @media (max-width: 420px) {
+      h1 { font-size: 1.45em; }
+      .category, .cat-items, .cat-header { font-size: 1em; }
+    }
+  </style>
+
 </head>
 <body>
   <header>
