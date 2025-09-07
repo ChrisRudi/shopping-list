@@ -1,389 +1,325 @@
 <!DOCTYPE html>
+<!-- Shopping.html -->
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Einkaufsliste – iPhone16-optimiert</title>
-  <style>
-    :root {
-      --accent: #15d6e1;
-      --bg: #181c22;
-      --card: #23273a;
-      --text: #fff;
-      --inactive: #808fa3;
-      --border: #272b45;
-      --highlight: #30e5ec;
-    }
-    body {
-      font-family: 'Inter', Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-      min-height: 100vh;
-      transition: background 0.2s;
-    }
-    header {
-      text-align: center;
-      padding: 32px 12px 12px 12px;
-    }
-    h1 { color: var(--accent); font-size: 2em; font-weight: 700; margin-bottom: 8px;}
-    .search-bar {
-      width: 100%; max-width: 420px; margin: auto; margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    #search {
-      width: 100%; padding: 14px;
-      background: var(--card);
-      border-radius: 12px;
-      border: none;
-      color: var(--text);
-      font-size: 1,1em;
-      outline: none;
-    }
-    .menu {
-      display: flex;
-      justify-content: center;
-      gap: 18px;
-      margin-bottom: 12px;
-    }
-    .menu-btn {
-      background: var(--card);
-      color: var(--text);
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-size: 1em;
-      cursor: pointer;
-      touch-action: manipulation;
-      min-width: 48px; min-height: 48px;
-      transition: background 0.16s;
-    }
-    .menu-btn:active { background: var(--accent); color: var(--bg);}
-    .category {
-      background: var(--card);
-      border-radius: 12px;
-      margin-bottom: 18px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.02);
-      border: 1px solid var(--border);
-    }
-    .cat-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 14px 18px; cursor: pointer; font-size: 1.2em; font-weight: 600;
-      color: var(--accent);
-      user-select: none;
-    }
-    .cat-header .toggle { font-size: 1.2em;}
-    .cat-items { padding: 6px 18px 12px 28px;}
-    .item-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
-      min-height: 48px;
-      transition: background 0.2s;
-    }
-    .item-row:last-child { border-bottom: none;}
-    .item-row.selected {
-      background: var(--highlight); color: #111;
-      border-radius: 8px;
-    }
-    .item-row label {
-      flex: 1; font-size: 1.09em; cursor: pointer;
-    }
-    .item-amount {
-      color: var(--inactive); font-size: 0.95em; margin-right: 9px;
-    }
-    .checkbox {
-      appearance: none; width: 30px; height: 30px;
-      border-radius: 50%;
-      border: 2px solid var(--accent);
-      background: var(--card);
-      transition: border 0.17s;
-      cursor: pointer; position: relative;
-      margin-right: 2px;
-    }
-    .checkbox:checked {
-      background: var(--accent); border: 2px solid var(--highlight);
-    }
-    .checkbox:checked::after {
-      content: '✓';
-      color: #111;
-      position: absolute; left: 8px; top: 3px; font-size: 1.24em;
-      font-family: Arial, sans-serif;
-    }
-    .hidden { display: none !important;}
-    .status-bar {
-      position: fixed; bottom: env(safe-area-inset-bottom, 0); left: 0; right: 0;
-      background: var(--card);
-      color: var(--accent);
-      font-weight: 600;
-      text-align: center;
-      padding: 12px 0;
-      font-size: 1.13em;
-      box-shadow: 0 -2px 7px rgba(0,0,0,0.05);
-    }
-    @media (max-width: 420px) {
-      h1 { font-size: 1.35em;}
-      .category, .cat-items, .cat-header { font-size: 1em;}
-      .menu-btn, .search-bar { font-size: 0.97em;}
-    }
-  </style>
-
-  <style id="compact-tweaks">
-    /* --- Compact / iPhone-optimized tweaks --- */
-    html, body { font-size: 18px; } /* larger base font */
-    header { padding: 20px 12px 8px 12px; }
-    h1 { font-size: 1.6em; margin: 0 0 6px 0; }
-    .search-bar { max-width: 420px; margin-bottom: 12px; }
-    #search { padding: 12px 14px; font-size: 1.05em; }
-    .menu { gap: 12px; margin-bottom: 8px; }
-    .menu-btn { padding: 10px 14px; font-size: 1.05em; }
-
-    .category { margin-bottom: 12px; border-radius: 10px; }
-    .cat-header { padding: 10px 14px; font-size: 1.05em; }
-    .cat-items { padding: 2px 14px 6px 20px; }
-
-    /* Aim for ~10 items per viewport on iPhone heights (~844px).
-       Use a compact row with slightly larger text. */
-    .item-row { 
-      padding: 6px 0; 
-      min-height: 64px; 
-    }
-    .item-row label { 
-      font-size: 1.12em; 
-      line-height: 1.15; 
-    }
-    .item-amount { 
-      font-size: 1.02em; 
-      margin-right: 8px; 
-    }
-    .checkbox { 
-      width: 28px; 
-      height: 28px; 
-    }
-    .checkbox:checked::after { 
-      left: 7px; 
-      top: 1px; 
-      font-size: 1.2em; 
-    }
-
-    .status-bar { 
-      font-size: 1.05em; 
-      padding: 10px 0; 
-    }
-
-    /* On very small widths, keep fonts generous rather than shrinking further */
-    @media (max-width: 420px) {
-      h1 { font-size: 1.45em; }
-      .category, .cat-items, .cat-header { font-size: 1em; }
-    }
-  </style>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Einkaufsliste</title>
+<style>
+:root{--a:#15d6e1;--as:#30e5ec;--bg:#181c22;--c:#23273a;--t:#fff;--m:#91a0b5;--b:#2a2f49;--f:#7ef0f6;--rh:64px;--ts:48px;--r:12px}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+html{font-size:18px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--t);padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(env(safe-area-inset-bottom) + 52px) env(safe-area-inset-left);min-height:100%;-webkit-text-size-adjust:100%}
+.hidden{display:none!important}
+header{text-align:center;padding:20px 12px 8px}
+h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
+.search-bar{width:100%;max-width:420px;margin:0 auto 12px;display:flex;align-items:center;gap:8px}
+#search{width:100%;padding:12px 14px;background:var(--c);border-radius:10px;border:1px solid var(--b);color:var(--t);font-size:1.05rem;outline:none}
+#search::placeholder{color:var(--m)}
+#search:focus{border-color:var(--f);box-shadow:0 0 0 3px color-mix(in oklab,var(--f),transparent 80%)}
+.menu{display:flex;justify-content:center;gap:12px;margin-bottom:8px}
+.menu-btn{background:var(--c);color:var(--t);border:1px solid var(--b);padding:10px 14px;border-radius:10px;font-size:1.05rem;cursor:pointer;touch-action:manipulation;min-width:var(--ts);min-height:var(--ts);transition:transform .06s ease-out,background .15s,border-color .15s}
+.menu-btn:active{transform:scale(.98);background:color-mix(in oklab,var(--c),var(--a) 12%);border-color:var(--a)}
+.menu-toggle{width:var(--ts);height:var(--ts);display:grid;place-items:center;padding:0;line-height:1}
+.menu-btn:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in oklab,var(--f),transparent 70%);border-color:var(--f)}
+.category{background:var(--c);border-radius:10px;margin:0 12px 12px;border:1px solid var(--b);overflow:clip}
+.cat-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;color:var(--a);font-size:1.05rem;font-weight:650;user-select:none;cursor:pointer;min-height:var(--ts)}
+.cat-header .toggle{font-size:1.2rem;color:var(--m)}
+.cat-items{padding:2px 14px 6px 20px}
+.item-row{display:grid;grid-template-columns:var(--ts) 1fr;align-items:center;gap:10px;border-bottom:1px solid var(--b);min-height:var(--rh);height:var(--rh);will-change:background-color}
+.item-row:last-child{border-bottom:none}
+.item-row.selected{background:color-mix(in oklab,var(--as),white 75%);color:#0c0c0c}
+.item-row label{display:block;cursor:pointer;font-size:1.12rem;line-height:1.15;padding:8px 0}
+.item-amount{color:var(--m);font-size:1.02rem;margin-right:8px}
+.checkbox{appearance:none;-webkit-appearance:none;inline-size:var(--ts);block-size:var(--ts);min-width:var(--ts);min-height:var(--ts);display:grid;place-items:center;border-radius:50%;border:2px solid var(--a);background:var(--c);cursor:pointer;position:relative;margin:0;transition:background-color 120ms ease,border-color 120ms ease}
+.checkbox:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in oklab,var(--f),transparent 70%);border-color:var(--f)}
+.checkbox:checked{background:var(--a);border-color:var(--as)}
+.checkbox:checked::before{content:"✓";color:#0c0c0c;font-weight:800;font-size:1.2rem;position:absolute;line-height:1}
+.status-wrap{position:fixed;left:0;right:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);z-index:50}
+.status-bar{background:var(--c);color:var(--a);font-weight:650;text-align:center;padding:12px 0;font-size:1.05rem;border-top:1px solid var(--b)}
+.sr-live{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media (max-width:420px){h1{font-size:1.45rem}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
 </head>
 <body>
-  <header>
-    <h1>Einkaufsliste</h1>
-    <div class="search-bar">
-      <input id="search" type="search" placeholder="🔍 Artikel/Kategorie suchen…" autocomplete="off">
-      <button class="menu-btn" id="menu">⋯</button>
-    </div>
-    <div class="menu hidden" id="menuPopup">
-      <button class="menu-btn" id="showSelected">📋 Nur Auswahl</button>
-      <button class="menu-btn" id="sendList">📤 Auswahl senden</button>
-      <button class="menu-btn" id="resetList">🗑️ Zurücksetzen</button>
-    </div>
-  </header>
-  <main id="list"></main>
-  <div class="status-bar" id="statusBar"></div>
-  <script>
-    // CSV-Daten aus dem Anhang
-    const csv = `Kategorie,Menge,Bezeichnung
-Obst & Gemüse,"1,2 kg",BILLA Brokkoli frisch
-,"1,0 kg",BILLA Blumenkohl
-,"1,5 kg",BILLA Zucchini
-,600 g,BILLA Spinat  (oder BILLA Bio Blattspinat TK 2×)
-,6 Stk,BILLA Paprika Mix
-,500 g,BILLA Champignons
-,250 g,BILLA Rucola
-,6 Stk,BILLA Tomaten
-,2 Stk,BILLA Gurken
-,6 Stk,BILLA Zwiebeln
+<header>
+<h1>Einkaufsliste</h1>
+<div class="search-bar">
+<input id="search" type="search" placeholder="🔍 Artikel/Kategorie suchen…" autocomplete="off" enterkeyhint="search">
+<button class="menu-btn menu-toggle" id="menu" aria-haspopup="true" aria-expanded="false">⋯</button>
+</div>
+<div class="menu hidden" id="menuPopup" role="menu">
+<button class="menu-btn" id="showSelected" role="menuitem">📋 Nur Auswahl</button>
+<button class="menu-btn" id="sendList" role="menuitem">📤 Auswahl senden</button>
+<button class="menu-btn" id="resetList" role="menuitem">🗑️ Zurücksetzen</button>
+</div>
+</header>
+<main id="list"></main>
+<div class="status-wrap">
+<p class="sr-live" aria-live="polite" id="liveCounter"></p>
+<div class="status-bar" id="statusBar">0 ausgewählt · 0 sichtbar</div>
+</div>
+<script>
+const d=`Kategorie,Menge,Bezeichnung
+Obst & Gemüse,"1,2 kg",Brokkoli frisch
+,"1,0 kg",Blumenkohl
+,"1,5 kg",Zucchini
+,600 g,Spinat  (oder Bio Blattspinat TK 2×)
+,6 Stk,Paprika Mix
+,500 g,Champignons
+,250 g,Rucola
+,6 Stk,Tomaten
+,2 Stk,Gurken
+,6 Stk,Zwiebeln
 ,,Knoblauch 1 Knolle
-,4 Stk,BILLA Zitronen
-,1 kg,BILLA Beeren-Mix TK
+,4 Stk,Zitronen
+,1 kg,Beeren-Mix TK
 ,2 Stk,Avocado
-,1 Bund,"BILLA Petersilie, Dill, Schnittlauch je"
-Milchprodukte & Eier,500 g,BILLA Skyr natur  Becher ()
-,1 kg,BILLA Magerquark
-,1 kg,BILLA Griechisches Joghurt 10%
-,500 g,BILLA Cottage Cheese (Hüttenkäse)
-,200 g,BILLA Gouda 6 Monate gereift
-,150 g,BILLA Parmesan am Stück
-,20 Stk,BILLA Freilandeier
+,1 Bund,"Petersilie, Dill, Schnittlauch je"
+Milchprodukte & Eier,500 g,Skyr natur  Becher ()
+,1 kg,Magerquark
+,1 kg,Griechisches Joghurt 10%
+,500 g,Cottage Cheese (Hüttenkäse)
+,200 g,Gouda 6 Monate gereift
+,150 g,Parmesan am Stück
+,20 Stk,Freilandeier
 ,250 g,Ja! Natürlich Weidebutter
-Fleisch & Fisch,"1,6 kg",BILLA Hühnerfilet
-,800 g,BILLA Rind Faschiertes mager
-,600 g,BILLA Lachsfilet TK
-,600 g,BILLA Seehechtfilet TK
-,500 g,BILLA Garnelen geschält TK
-,3 Dosen,BILLA Thunfisch in Wasser
-,1 Glas,BILLA Sardellenfilets
-Vorrat & Feinkost,200 g,BILLA Grüne Oliven entsteint
-,1 Glas,BILLA Pesto alla Genovese (zuckerarm)
-,500 ml,BILLA Passierte Tomaten
-,250 ml,BILLA Sojasauce
-,500 ml,BILLA Bio Olivenöl Extra Vergine
-,250 ml,BILLA Kokosö
-,200 g,BILLA Bio Leinsamen  oder Chiasamen
-,150 g,BILLA Pekannüsse
-,150 g,BILLA Paranüsse
+Fleisch & Fisch,"1,6 kg",Hühnerfilet
+,800 g,Rind Faschiertes mager
+,600 g,Lachsfilet TK
+,600 g,Seehechtfilet TK
+,500 g,Garnelen geschält TK
+,3 Dosen,Thunfisch in Wasser
+,1 Glas,Sardellenfilets
+Vorrat & Feinkost,200 g,Grüne Oliven entsteint
+,1 Glas,Pesto alla Genovese (zuckerarm)
+,500 ml,Passierte Tomaten
+,250 ml,Sojasauce
+,500 ml,Bio Olivenöl Extra Vergine
+,250 ml,Kokosöl
+,200 g,Bio Leinsamen  oder Chiasamen
+,150 g,Pekannüsse
+,150 g,Paranüsse
 ,100 g,Kakao-Nibs
 ,,"Gewürze: Salz, Pfeffer, Paprika, Chili, Knoblauchpulver, Zimt"
 ,,Süßstoff / FlavDrops
 ,270 g,Kajnok Slim Nudeln  (Konjaknudeln)
-Tiefkühl,450 g,BILLA Bio Blattspinat  ()
-,2 Beutel,BILLA Blumenkohlreis TK
-,1 kg,BILLA Beeren-Mix TK`;
+Tiefkühl,450 g,Bio Blattspinat  ()
+,2 Beutel,Blumenkohlreis TK
+,1 kg,Beeren-Mix TK`;
 
-    // CSV nach Kategorie parsen:
-    function parseCSV(data) {
-      const lines = data.split('\n').slice(1);
-      const categories = {};
-      let currentCat = '';
-      for (const line of lines) {
-        let [cat, menge, bez] = line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g).map(s => s.replace(/^"|"$/g, '').trim());
-        if (cat) currentCat = cat;
-        if (!categories[currentCat]) categories[currentCat] = [];
-        if (bez) categories[currentCat].push({ amount: menge, name: bez });
-      }
-      return categories;
-    }
-    const categories = parseCSV(csv);
+function parseCSV(data){
+const lines=data.split("\n").slice(1);
+const categories={};
+let currentCat="";
+for(const line of lines){
+const parts=line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g).map(s=>s.replace(/^"|"$/g,"").trim());
+let[cat,menge,bez]=parts;
+if(cat)currentCat=cat;
+if(!categories[currentCat])categories[currentCat]=[];
+if(bez)categories[currentCat].push({amount:menge,name:bez});
+}
+return categories;
+}
 
-    // localStorage, filter, status & Rendering
-    let selected = JSON.parse(localStorage.getItem('ek_selected') || '{}');
-    let collapsed = JSON.parse(localStorage.getItem('ek_collapsed') || '{}');
-    let filter = '';
-    let onlySelected = false;
+const categories=parseCSV(d);
+const LS_SELECTED="ek_selected";
+const LS_COLLAPSED="ek_collapsed";
+const LS_ONLYSEL="ek_onlySelected";
+const LS_FILTER="ek_filter";
 
-    function saveLocal() {
-      localStorage.setItem('ek_selected', JSON.stringify(selected));
-      localStorage.setItem('ek_collapsed', JSON.stringify(collapsed));
-    }
+let selected=JSON.parse(localStorage.getItem(LS_SELECTED)||"{}");
+let collapsed=JSON.parse(localStorage.getItem(LS_COLLAPSED)||"{}");
+let onlySelected=JSON.parse(localStorage.getItem(LS_ONLYSEL)||"false");
+let filter=localStorage.getItem(LS_FILTER)||"";
 
-    function renderList() {
-      const main = document.getElementById('list');
-      main.innerHTML = '';
-      let totalVisible = 0, selectedCount = 0;
-      Object.entries(categories).forEach(([cat, items]) => {
-        // Kategorie-Filter
-        const catItems = items.filter(itm => {
-          if (!filter) return true;
-          let txt = (itm.name + ' ' + itm.amount).toLowerCase() + ' ' + cat.toLowerCase();
-          return txt.includes(filter.toLowerCase());
-        });
-        if (!catItems.length) return;
-        // Filter: Nur Auswahl-Modus
-        const visItems = onlySelected ? catItems.filter(itm => selected[cat+'|'+itm.name]) : catItems;
-        if (!visItems.length) return;
-        totalVisible += visItems.length;
-        // Kategorie-Card
-        const catDiv = document.createElement('div');
-        catDiv.className = 'category';
-        const chevron = collapsed[cat] ? '▼' : '▲';
-        catDiv.innerHTML = `
-          <div class="cat-header" data-cat="${cat}">
-            <span>${cat}</span>
-            <span class="toggle">${chevron}</span>
-          </div>
-          <div class="cat-items${collapsed[cat] ? ' hidden' : ''}"></div>
-        `;
-        const itemContainer = catDiv.querySelector('.cat-items');
-        visItems.forEach(item => {
-          const itKey = cat+'|'+item.name;
-          const checked = !!selected[itKey];
-          if (checked) selectedCount++;
-          const row = document.createElement('div');
-          row.className = 'item-row' + (checked ? ' selected' : '');
-          row.innerHTML = `
-            <input type="checkbox" class="checkbox" id="${itKey}" ${checked ? 'checked':''}>
-            <label for="${itKey}">
-              <span class="item-amount">${item.amount ? item.amount : ''}</span>
-              ${item.name}
-            </label>
-          `;
-          // Touch-friendly
-          row.querySelector('.checkbox').style.minWidth = '48px';
-          row.querySelector('.checkbox').style.minHeight = '48px';
-          itemContainer.appendChild(row);
-        });
-        main.appendChild(catDiv);
-      });
-      // Status-Bar
-      document.getElementById('statusBar').textContent =
-        `${selectedCount} ausgewählt · ${totalVisible} sichtbar`;
-      // Liste Interaktionen
-      document.querySelectorAll('.cat-header').forEach(head => {
-        head.onclick = () => {
-          let cat = head.dataset.cat;
-          collapsed[cat] = !collapsed[cat];
-          saveLocal();
-          renderList();
-        };
-      });
-      document.querySelectorAll('.checkbox').forEach(cb => {
-        cb.onchange = (e) => {
-          selected[e.target.id] = cb.checked;
-          saveLocal();
-          renderList();
-        };
-      });
-    }
+function saveLocal(){
+localStorage.setItem(LS_SELECTED,JSON.stringify(selected));
+localStorage.setItem(LS_COLLAPSED,JSON.stringify(collapsed));
+localStorage.setItem(LS_ONLYSEL,JSON.stringify(onlySelected));
+localStorage.setItem(LS_FILTER,filter);
+}
 
-    // Suchfeld
-    document.getElementById('search').oninput = (e) => {
-      filter = e.target.value;
-      renderList();
-    };
+const listEl=document.getElementById("list");
+const statusEl=document.getElementById("statusBar");
+const liveEl=document.getElementById("liveCounter");
+const searchEl=document.getElementById("search");
 
-    // Menü
-    const menu = document.getElementById('menuPopup');
-    document.getElementById('menu').onclick = () => {
-      menu.classList.toggle('hidden');
-    };
+searchEl.value=filter;
 
-    document.getElementById('showSelected').onclick = () => {
-      onlySelected = !onlySelected;
-      renderList();
-      menu.classList.add('hidden');
-    };
-    document.getElementById('sendList').onclick = async () => {
-      // Export als Text
-      let out = Object.entries(selected)
-        .filter(([_, v]) => v)
-        .map(([k, _]) => {
-          let [cat, name] = k.split('|');
-          return `${name} (${cat})`;
-        }).join('\n');
-      if (navigator.share) {
-        await navigator.share({ title: 'Meine Einkaufsliste', text: out });
-      } else {
-        window.location = 'mailto:?subject=Einkaufsliste&body=' + encodeURIComponent(out);
-      }
-      menu.classList.add('hidden');
-    };
-    document.getElementById('resetList').onclick = () => {
-      selected = {};
-      filter = '';
-      onlySelected = false;
-      saveLocal();
-      renderList();
-      menu.classList.add('hidden');
-      document.getElementById('search').value = '';
-    };
+function itemMatchesFilter(cat,item){
+if(!filter)return true;
+const t=(item.name+" "+(item.amount||"")+" "+cat).toLowerCase();
+return t.includes(filter.toLowerCase());
+}
 
-    renderList();
-  </script>
+function computeVisibleAndSelected(){
+let visible=0,sel=0;
+for(const[cat,items]of Object.entries(categories)){
+for(const item of items){
+const key=cat+"|"+item.name;
+const inFilter=itemMatchesFilter(cat,item);
+const inOnly=!onlySelected||!!selected[key];
+if(inFilter&&inOnly){
+visible++;
+if(selected[key])sel++;
+}
+}
+}
+return{visible,sel};
+}
+
+function updateStatus(){
+const{visible,sel}=computeVisibleAndSelected();
+const text=`${sel} ausgewählt · ${visible} sichtbar`;
+statusEl.textContent=text;
+liveEl.textContent=text;
+}
+
+function renderList(){
+listEl.innerHTML="";
+for(const[cat,items]of Object.entries(categories)){
+const shownItems=items.filter(it=>itemMatchesFilter(cat,it)&&(!onlySelected||selected[cat+"|"+it.name]));
+if(!shownItems.length)continue;
+
+const catDiv=document.createElement("section");
+catDiv.className="category";
+const isCollapsed=!!collapsed[cat];
+catDiv.innerHTML=`<div class="cat-header" data-cat="${cat}" aria-expanded="${!isCollapsed}"><span>${cat}</span><span class="toggle" aria-hidden="true">${isCollapsed?"▼":"▲"}</span></div><div class="cat-items ${isCollapsed?"hidden":""}"></div>`;
+
+const itemsWrap=catDiv.querySelector(".cat-items");
+for(const item of shownItems){
+const key=cat+"|"+item.name;
+const checked=!!selected[key];
+
+const row=document.createElement("div");
+row.className="item-row"+(checked?" selected":"");
+row.dataset.key=key;
+
+const cb=document.createElement("input");
+cb.type="checkbox";
+cb.className="checkbox";
+cb.id=key;
+cb.checked=checked;
+cb.setAttribute("aria-label",item.name);
+
+const label=document.createElement("label");
+label.htmlFor=key;
+label.innerHTML=`<span class="item-amount">${item.amount?item.amount:""}</span>${item.name}`;
+
+row.appendChild(cb);
+row.appendChild(label);
+itemsWrap.appendChild(row);
+}
+listEl.appendChild(catDiv);
+}
+updateStatus();
+}
+
+listEl.addEventListener("change",e=>{
+if(!(e.target instanceof HTMLInputElement))return;
+if(!e.target.classList.contains("checkbox"))return;
+
+const key=e.target.id;
+const checked=e.target.checked;
+selected[key]=checked;
+
+const row=e.target.closest(".item-row");
+if(row)row.classList.toggle("selected",checked);
+
+saveLocal();
+updateStatus();
+
+if(onlySelected&&!checked){
+const rowEl=row;
+if(rowEl){
+rowEl.style.opacity="0";
+rowEl.style.transition="opacity 120ms ease";
+setTimeout(()=>{
+const wrapper=rowEl.closest(".cat-items");
+rowEl.remove();
+if(wrapper&&!wrapper.children.length){
+wrapper.closest(".category")?.remove();
+}
+updateStatus();
+},120);
+}
+}
+});
+
+listEl.addEventListener("click",e=>{
+const header=e.target.closest(".cat-header");
+if(!header)return;
+
+const cat=header.dataset.cat;
+const section=header.parentElement;
+const items=section.querySelector(".cat-items");
+const toggleIcon=header.querySelector(".toggle");
+
+const newCollapsed=!collapsed[cat];
+collapsed[cat]=newCollapsed;
+items.classList.toggle("hidden",newCollapsed);
+header.setAttribute("aria-expanded",String(!newCollapsed));
+toggleIcon.textContent=newCollapsed?"▼":"▲";
+
+saveLocal();
+});
+
+document.getElementById("search").addEventListener("input",e=>{
+filter=e.target.value;
+saveLocal();
+renderList();
+});
+
+const menuBtn=document.getElementById("menu");
+const menu=document.getElementById("menuPopup");
+const openMenu=()=>{menu.classList.remove("hidden");menuBtn.setAttribute("aria-expanded","true");};
+const closeMenu=()=>{menu.classList.add("hidden");menuBtn.setAttribute("aria-expanded","false");};
+
+menuBtn.addEventListener("click",()=>{menu.classList.contains("hidden")?openMenu():closeMenu();});
+document.addEventListener("click",e=>{
+if(!menu.contains(e.target)&&e.target!==menuBtn&&!menuBtn.contains(e.target))closeMenu();
+});
+
+document.getElementById("showSelected").addEventListener("click",()=>{
+onlySelected=!onlySelected;
+saveLocal();
+renderList();
+closeMenu();
+});
+
+document.getElementById("sendList").addEventListener("click",async()=>{
+const lines=Object.entries(selected).filter(([,v])=>v).map(([k])=>{
+const[cat,name]=k.split("|");
+return`${name} (${cat})`;
+});
+const payload=lines.join("\n")||"Keine Auswahl";
+try{
+if(navigator.share){
+await navigator.share({title:"Meine Einkaufsliste",text:payload});
+}else if(navigator.clipboard&&window.isSecureContext){
+await navigator.clipboard.writeText(payload);
+alert("Liste in die Zwischenablage kopiert.");
+}else{
+window.location.href="mailto:?subject=Einkaufsliste&body="+encodeURIComponent(payload);
+}
+}catch{}
+closeMenu();
+});
+
+document.getElementById("resetList").addEventListener("click",()=>{
+selected={};
+filter="";
+onlySelected=false;
+document.getElementById("search").value="";
+saveLocal();
+renderList();
+closeMenu();
+});
+
+renderList();
+</script>
 </body>
 </html>
