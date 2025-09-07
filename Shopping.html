@@ -186,7 +186,7 @@ if(!shownItems.length)continue;
 
 const catDiv=document.createElement("section");
 catDiv.className="category";
-const isCollapsed=!!collapsed[cat];
+const isCollapsed=onlySelected?false:!!collapsed[cat];
 catDiv.innerHTML=`<div class="cat-header" data-cat="${cat}" aria-expanded="${!isCollapsed}"><span>${cat}</span><span class="toggle" aria-hidden="true">${isCollapsed?"▼":"▲"}</span></div><div class="cat-items ${isCollapsed?"hidden":""}"></div>`;
 
 const itemsWrap=catDiv.querySelector(".cat-items");
@@ -291,11 +291,21 @@ closeMenu();
 });
 
 document.getElementById("sendList").addEventListener("click",async()=>{
-const lines=Object.entries(selected).filter(([,v])=>v).map(([k])=>{
+const selectedByCat={};
+Object.entries(selected).filter(([,v])=>v).forEach(([k])=>{
 const[cat,name]=k.split("|");
-return`${name} (${cat})`;
+if(!selectedByCat[cat])selectedByCat[cat]=[];
+selectedByCat[cat].push(name);
 });
-const payload=lines.join("\n")||"Keine Auswahl";
+
+const lines=[];
+Object.entries(selectedByCat).forEach(([cat,items])=>{
+lines.push(`${cat}:`);
+items.forEach(item=>lines.push(`  ${item}`));
+lines.push("");
+});
+
+const payload=lines.join("\n").trim()||"Keine Auswahl";
 try{
 if(navigator.share){
 await navigator.share({title:"Meine Einkaufsliste",text:payload});
