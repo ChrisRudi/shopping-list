@@ -27,7 +27,7 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 .cat-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;color:var(--a);font-size:1.05rem;font-weight:650;user-select:none;cursor:pointer;min-height:var(--ts)}
 .cat-header .toggle{font-size:1.2rem;color:var(--m)}
 .cat-items{padding:2px 14px 6px 20px}
-.item-row{display:grid;grid-template-columns:var(--ts) 1fr;align-items:center;gap:10px;border-bottom:1px solid var(--b);min-height:var(--rh);height:var(--rh);will-change:background-color}
+.item-row{display:grid;grid-template-columns:var(--ts) 1fr auto;align-items:center;gap:10px;border-bottom:1px solid var(--b);min-height:var(--rh);height:var(--rh);will-change:background-color}
 .item-row:last-child{border-bottom:none}
 .item-row.selected{background:color-mix(in oklab,var(--as),white 75%);color:#0c0c0c}
 .item-row label{display:block;cursor:pointer;font-size:1.12rem;line-height:1.15;padding:8px 0}
@@ -36,6 +36,14 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 .checkbox:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in oklab,var(--f),transparent 70%);border-color:var(--f)}
 .checkbox:checked{background:var(--a);border-color:var(--as)}
 .checkbox:checked::before{content:"✓";color:#0c0c0c;font-weight:800;font-size:1.2rem;position:absolute;line-height:1}
+.search-links{display:flex;gap:4px;align-items:center}
+.search-btn{background:var(--c);border:1px solid var(--b);color:var(--t);border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all .1s ease}
+.search-btn:hover{background:var(--a);color:#0c0c0c;transform:scale(1.05)}
+.search-btn:active{transform:scale(.95)}
+.search-btn.billa{border-color:#e53e3e}
+.search-btn.spar{border-color:#0066cc}
+.search-btn.billa:hover{background:#e53e3e;border-color:#e53e3e}
+.search-btn.spar:hover{background:#0066cc;border-color:#0066cc}
 .status-wrap{position:fixed;left:0;right:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);z-index:50}
 .status-bar{background:var(--c);color:var(--a);font-weight:650;text-align:center;padding:12px 0;font-size:1.05rem;border-top:1px solid var(--b)}
 .sr-live{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
@@ -124,6 +132,34 @@ if(bez)categories[currentCat].push({amount:menge,name:bez});
 return categories;
 }
 
+function optimizeSearchTerm(productName){
+return productName
+.replace(/\([^)]*\)/g,"")
+.replace(/\d+[×x]\s*/g,"")
+.replace(/\s+/g," ")
+.replace(/Bio\s+/gi,"")
+.replace(/Ja!\s*Natürlich\s+/gi,"")
+.replace(/TK\s*$/gi,"")
+.replace(/\s*\d+\s*Monate\s+gereift/gi,"")
+.replace(/\s*am\s+Stück/gi,"")
+.replace(/\s*entsteint/gi,"")
+.replace(/\s*geschält/gi,"")
+.replace(/\s*in\s+Wasser/gi,"")
+.replace(/\s*zuckerarm/gi,"")
+.replace(/Extra\s+Vergine/gi,"")
+.replace(/frisch\s*$/gi,"")
+.replace(/\s*oder\s+.*/gi,"")
+.replace(/,.*$/,"")
+.trim();
+}
+
+function generateSearchLinks(productName){
+const searchTerm=optimizeSearchTerm(productName);
+const billaUrl=`https://shop.billa.at/suche/${encodeURIComponent(searchTerm)}`;
+const sparUrl=`https://www.interspar.at/shop/lebensmittel/search/?q=${encodeURIComponent(searchTerm)}`;
+return{billa:billaUrl,spar:sparUrl};
+}
+
 const categories=parseCSV(d);
 const LS_SELECTED="ek_selected";
 const LS_COLLAPSED="ek_collapsed";
@@ -209,8 +245,30 @@ const label=document.createElement("label");
 label.htmlFor=key;
 label.innerHTML=`<span class="item-amount">${item.amount?item.amount:""}</span>${item.name}`;
 
+const searchLinks=generateSearchLinks(item.name);
+const linksContainer=document.createElement("div");
+linksContainer.className="search-links";
+
+const billaLink=document.createElement("a");
+billaLink.href=searchLinks.billa;
+billaLink.target="_blank";
+billaLink.className="search-btn billa";
+billaLink.innerHTML="🔍<small>B</small>";
+billaLink.title=`Bei Billa suchen: ${item.name}`;
+
+const sparLink=document.createElement("a");
+sparLink.href=searchLinks.spar;
+sparLink.target="_blank";
+sparLink.className="search-btn spar";
+sparLink.innerHTML="🔍<small>S</small>";
+sparLink.title=`Bei Spar suchen: ${item.name}`;
+
+linksContainer.appendChild(billaLink);
+linksContainer.appendChild(sparLink);
+
 row.appendChild(cb);
 row.appendChild(label);
+row.appendChild(linksContainer);
 itemsWrap.appendChild(row);
 }
 listEl.appendChild(catDiv);
