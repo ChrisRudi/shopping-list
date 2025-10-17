@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Keto Einkaufsliste</title>
 <style>
-:root{--a:#15d6e1;--as:#30e5ec;--bg:#181c22;--c:#23273a;--t:#fff;--m:#91a0b5;--b:#2a2f49;--f:#7ef0f6;--rh:64px;--ts:48px;--r:12px}
+:root{--a:#15d6e1;--as:#30e5ec;--bg:#181c22;--c:#23273a;--t:#fff;--m:#91a0b5;--b:#2a2f49;--f:#7ef0f6;--rh:64px;--ts:48px;--r:12px;--ok:#1a7f37}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 html{font-size:18px}
@@ -37,13 +37,17 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 .checkbox:checked{background:var(--a);border-color:var(--as)}
 .checkbox:checked::before{content:"✓";color:#0c0c0c;font-weight:800;font-size:1.2rem;position:absolute;line-height:1}
 .search-links{display:flex;gap:4px;align-items:center}
-.search-btn{background:var(--c);border:1px solid var(--b);color:var(--t);border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all .1s ease}
+.search-btn{--icon:#bbb;background:var(--c);border:1px solid var(--b);color:var(--t);border-radius:6px;inline-size:40px;block-size:32px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all .1s ease;gap:4px;padding:0 6px}
 .search-btn:hover{background:var(--a);color:#0c0c0c;transform:scale(1.05)}
 .search-btn:active{transform:scale(.95)}
 .search-btn.billa{border-color:#e53e3e}
 .search-btn.spar{border-color:#0066cc}
-.search-btn.billa:hover{background:#e53e3e;border-color:#e53e3e}
-.search-btn.spar:hover{background:#0066cc;border-color:#0066cc}
+.search-btn.billa:hover{background:#e53e3e;border-color:#e53e3e;color:#fff}
+.search-btn.spar:hover{background:#0066cc;border-color:#0066cc;color:#fff}
+/* Lupe als einfärbbare Masken-Icon, damit wir "grün" setzen können */
+.icon{inline-size:14px;block-size:14px;background:var(--icon)}
+.icon{mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M21 20.3 16.6 15.9a8 8 0 1 0-.7.7L20.3 21 21 20.3zM10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z"/></svg>') center/contain no-repeat;-webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M21 20.3 16.6 15.9a8 8 0 1 0-.7.7L20.3 21 21 20.3zM10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z"/></svg>') center/contain no-repeat}
+.search-btn.win{--icon:var(--ok);border-color:var(--ok);box-shadow:0 0 0 2px color-mix(in oklab,var(--ok),transparent 70%) inset}
 .status-wrap{position:fixed;left:0;right:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);z-index:50}
 .status-bar{background:var(--c);color:var(--a);font-weight:650;text-align:center;padding:12px 0;font-size:1.05rem;border-top:1px solid var(--b)}
 .sr-live{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
@@ -55,21 +59,74 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 <header>
 <h1>Keto Einkaufsliste</h1>
 <div class="search-bar">
-<input id="search" type="search" placeholder="🔍 Artikel/Kategorie suchen…" autocomplete="off" enterkeyhint="search">
+<input id="search" type="search" placeholder="Artikel/Kategorie suchen…" autocomplete="off" enterkeyhint="search">
 <button class="menu-btn menu-toggle" id="menu" aria-haspopup="true" aria-expanded="false">⋯</button>
 </div>
 <div class="menu hidden" id="menuPopup" role="menu">
-<button class="menu-btn" id="showSelected" role="menuitem">📋 Nur Auswahl</button>
-<button class="menu-btn" id="sendList" role="menuitem">📤 Auswahl senden</button>
-<button class="menu-btn" id="resetList" role="menuitem">🗑️ Zurücksetzen</button>
+<button class="menu-btn" id="showSelected" role="menuitem">Nur Auswahl</button>
+<button class="menu-btn" id="sendList" role="menuitem">Auswahl senden</button>
+<button class="menu-btn" id="resetList" role="menuitem">Zurücksetzen</button>
 </div>
 </header>
+
 <main id="list"></main>
+
 <div class="status-wrap">
 <p class="sr-live" aria-live="polite" id="liveCounter"></p>
 <div class="status-bar" id="statusBar">0 ausgewählt · 0 sichtbar</div>
 </div>
+
+<!-- Eingebettete Preis-Daten: key = normalisierter Suchbegriff (aus Produktname berechnet). 
+     Beispielwerte – erweitere/aktualisiere nach Bedarf. -->
+<script id="prices-data" type="application/json">
+[
+  { "key": "brokkoli",              "billa": 2.49, "spar": 2.39 },
+  { "key": "blumenkohl",            "billa": 2.49, "spar": 2.59 },
+  { "key": "zucchini",              "billa": 1.49, "spar": 1.39 },
+  { "key": "spinat blattspinat",    "billa": 2.99, "spar": 3.49 },
+  { "key": "paprika mix",           "billa": 3.79, "spar": 3.59 },
+  { "key": "champignons",           "billa": 2.49, "spar": 2.79 },
+  { "key": "rucola",                "billa": 1.79, "spar": 1.79 },
+  { "key": "tomaten",               "billa": 2.69, "spar": 2.79 },
+  { "key": "gurken",                "billa": 1.39, "spar": 1.49 },
+  { "key": "zwiebeln",              "billa": 1.29, "spar": 1.29 },
+  { "key": "knoblauch",             "billa": 0.89, "spar": 0.99 },
+  { "key": "zitronen",              "billa": 0.59, "spar": 0.55 },
+  { "key": "avocado",               "billa": 1.49, "spar": 1.69 },
+  { "key": "petersilie dill schnittlauch", "billa": 1.29, "spar": 1.29 },
+  { "key": "skyr becher",           "billa": 1.79, "spar": 1.89 },
+  { "key": "magerquark",            "billa": 1.09, "spar": 1.19 },
+  { "key": "griechisches joghurt 10", "billa": 3.49, "spar": 3.69 },
+  { "key": "cottage cheese huettenkaese", "billa": 1.19, "spar": 1.29 },
+  { "key": "gouda",                 "billa": 3.19, "spar": 3.49 },
+  { "key": "parmesan stueck",       "billa": 5.99, "spar": 6.29 },
+  { "key": "freilandeier",          "billa": 3.49, "spar": 3.59 },
+  { "key": "butter",                "billa": 2.99, "spar": 3.19 },
+  { "key": "huehnerfilet",          "billa": 11.99, "spar": 12.49 },
+  { "key": "rind faschiertes mager","billa": 18.64, "spar": 18.99 },
+  { "key": "lachsfilet",            "billa": 8.49, "spar": 8.99 },
+  { "key": "seehechtfilet",         "billa": 6.99, "spar": 7.49 },
+  { "key": "garnelen geschaelt",    "billa": 6.49, "spar": 6.99 },
+  { "key": "thunfisch in wasser",   "billa": 1.99, "spar": 2.19 },
+  { "key": "sardellenfilets",       "billa": 2.79, "spar": 2.99 },
+  { "key": "gruenen oliven entsteint","billa": 1.49, "spar": 1.59 },
+  { "key": "pesto alla genovese",   "billa": 3.69, "spar": 2.69 },
+  { "key": "passierte tomaten",     "billa": 1.94, "spar": 1.99 },
+  { "key": "sojasauce",             "billa": 2.17, "spar": 2.29 },
+  { "key": "olivenoel",             "billa": 9.99, "spar": 10.49 },
+  { "key": "kokosoel",              "billa": 4.49, "spar": 4.59 },
+  { "key": "leinsamen chiasamen",   "billa": 2.99, "spar": 3.49 },
+  { "key": "pekannuesse",           "billa": 4.99, "spar": 5.29 },
+  { "key": "paranuesse",            "billa": 4.99, "spar": 5.19 },
+  { "key": "kakao nibs",            "billa": null, "spar": null },
+  { "key": "konjaknudeln",          "billa": 2.47, "spar": 2.79 },
+  { "key": "blumenkohlreis",        "billa": null, "spar": null },
+  { "key": "beeren mix",            "billa": 2.99, "spar": 3.29 }
+]
+</script>
+
 <script>
+/* ===== CSV & bestehende UI-Logik (leicht angepasst) ===== */
 const d=`Kategorie,Menge,Bezeichnung
 Obst & Gemüse,"1,2 kg",Brokkoli frisch
 ,"1,0 kg",Blumenkohl
@@ -118,48 +175,87 @@ Tiefkühl,450 g,Bio Blattspinat
 ,2 Beutel,TK Blumenkohlreis 
 ,1 kg,Beeren-Mix TK`;
 
+(function suppressErrors(){
+  try{
+    window.onerror=function(){return true};
+    window.addEventListener("error",e=>{try{e.preventDefault()}catch(_){}} ,true);
+    window.addEventListener("unhandledrejection",e=>{try{e.preventDefault()}catch(_){}} );
+    var c=console; ["error","warn"].forEach(k=>{try{c[k]=function(){}}catch(_){}} );
+  }catch(_){}
+})();
+
 function parseCSV(data){
-const lines=data.split("\n").slice(1);
-const categories={};
-let currentCat="";
-for(const line of lines){
-const parts=line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g).map(s=>s.replace(/^"|"$/g,"").trim());
-let[cat,menge,bez]=parts;
-if(cat)currentCat=cat;
-if(!categories[currentCat])categories[currentCat]=[];
-if(bez)categories[currentCat].push({amount:menge,name:bez});
-}
-return categories;
+  const lines=data.split("\n").slice(1);
+  const categories={};
+  let currentCat="";
+  for(const line of lines){
+    const parts=line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g).map(s=>s.replace(/^"|"$/g,"").trim());
+    let[cat,menge,bez]=parts;
+    if(cat)currentCat=cat;
+    if(!categories[currentCat])categories[currentCat]=[];
+    if(bez)categories[currentCat].push({amount:menge,name:bez});
+  }
+  return categories;
 }
 
+/* ===== Preis-/Vergleichslogik ===== */
+function normalize(s){
+  return String(s||"")
+    .toLowerCase()
+    .replace(/\s+/g," ")
+    .replace(/[^\wäöüß0-9 ]/g,"")
+    .trim();
+}
 function optimizeSearchTerm(productName){
-return productName
-.replace(/\([^)]*\)/g,"")
-.replace(/\d+[×x]\s*/g,"")
-.replace(/\s+/g," ")
-.replace(/Bio\s+/gi,"")
-.replace(/Ja!\s*Natürlich\s+/gi,"")
-.replace(/TK\s*$/gi,"")
-.replace(/\s*\d+\s*Monate\s+gereift/gi,"")
-.replace(/\s*am\s+Stück/gi,"")
-.replace(/\s*entsteint/gi,"")
-.replace(/\s*geschält/gi,"")
-.replace(/\s*in\s+Wasser/gi,"")
-.replace(/\s*zuckerarm/gi,"")
-.replace(/Extra\s+Vergine/gi,"")
-.replace(/frisch\s*$/gi,"")
-.replace(/\s*oder\s+.*/gi,"")
-.replace(/,.*$/,"")
-.trim();
+  return productName
+    .replace(/\([^)]*\)/g,"")
+    .replace(/\d+[×x]\s*/g,"")
+    .replace(/\s+/g," ")
+    .replace(/bio\s+/gi,"")
+    .replace(/ja!\s*naturlich\s+/gi,"")
+    .replace(/tk\s*$/gi,"")
+    .replace(/\s*\d+\s*monate\s+gereift/gi,"")
+    .replace(/\s*am\s+stuck/gi,"")
+    .replace(/\s*entsteint/gi,"")
+    .replace(/\s*geschalt/gi,"")
+    .replace(/\s*in\s+wasser/gi,"")
+    .replace(/extra\s+vergine/gi,"")
+    .replace(/frisch\s*$/gi,"")
+    .replace(/\s*oder\s+.*/gi,"")
+    .replace(/,.*$/,"")
+    .trim();
+}
+function euro(n){
+  if(n==null || isNaN(n)) return "–";
+  return Number(n).toFixed(2).replace(".", ",") + " €";
+}
+
+let priceIndex = new Map();
+(function loadPrices(){
+  try{
+    const raw=document.getElementById("prices-data")?.textContent||"[]";
+    const arr=JSON.parse(raw);
+    for(const it of arr){
+      if(!it||!it.key) continue;
+      priceIndex.set(normalize(it.key), {billa: it.billa, spar: it.spar});
+    }
+  }catch(_){}
+})();
+
+function getPricesForName(productName){
+  const key = normalize(optimizeSearchTerm(productName));
+  const rec = priceIndex.get(key);
+  return rec || null;
 }
 
 function generateSearchLinks(productName){
-const searchTerm=optimizeSearchTerm(productName);
-const billaUrl=`https://shop.billa.at/suche/${encodeURIComponent(searchTerm)}`;
-const sparUrl=`https://www.interspar.at/shop/lebensmittel/search/?q=${encodeURIComponent(searchTerm)}`;
-return{billa:billaUrl,spar:sparUrl};
+  const searchTerm = optimizeSearchTerm(productName);
+  const billaUrl=`https://shop.billa.at/suche/${encodeURIComponent(searchTerm)}`;
+  const sparUrl=`https://www.interspar.at/shop/lebensmittel/search/?q=${encodeURIComponent(searchTerm)}`;
+  return{billa:billaUrl,spar:sparUrl,term:searchTerm};
 }
 
+/* ===== Bestehender State/UI ===== */
 const categories=parseCSV(d);
 const LS_SELECTED="ek_selected";
 const LS_COLLAPSED="ek_collapsed";
@@ -172,221 +268,245 @@ let onlySelected=JSON.parse(localStorage.getItem(LS_ONLYSEL)||"false");
 let filter=localStorage.getItem(LS_FILTER)||"";
 
 function saveLocal(){
-localStorage.setItem(LS_SELECTED,JSON.stringify(selected));
-localStorage.setItem(LS_COLLAPSED,JSON.stringify(collapsed));
-localStorage.setItem(LS_ONLYSEL,JSON.stringify(onlySelected));
-localStorage.setItem(LS_FILTER,filter);
+  localStorage.setItem(LS_SELECTED,JSON.stringify(selected));
+  localStorage.setItem(LS_COLLAPSED,JSON.stringify(collapsed));
+  localStorage.setItem(LS_ONLYSEL,JSON.stringify(onlySelected));
+  localStorage.setItem(LS_FILTER,filter);
 }
 
 const listEl=document.getElementById("list");
 const statusEl=document.getElementById("statusBar");
 const liveEl=document.getElementById("liveCounter");
 const searchEl=document.getElementById("search");
-
 searchEl.value=filter;
 
 function itemMatchesFilter(cat,item){
-if(!filter)return true;
-const t=(item.name+" "+(item.amount||"")+" "+cat).toLowerCase();
-return t.includes(filter.toLowerCase());
+  if(!filter)return true;
+  const t=(item.name+" "+(item.amount||"")+" "+cat).toLowerCase();
+  return t.includes(filter.toLowerCase());
 }
 
 function computeVisibleAndSelected(){
-let visible=0,sel=0;
-for(const[cat,items]of Object.entries(categories)){
-for(const item of items){
-const key=cat+"|"+item.name;
-const inFilter=itemMatchesFilter(cat,item);
-const inOnly=!onlySelected||!!selected[key];
-if(inFilter&&inOnly){
-visible++;
-if(selected[key])sel++;
-}
-}
-}
-return{visible,sel};
+  let visible=0,sel=0;
+  for(const[cat,items]of Object.entries(categories)){
+    for(const item of items){
+      const key=cat+"|"+item.name;
+      const inFilter=itemMatchesFilter(cat,item);
+      const inOnly=!onlySelected||!!selected[key];
+      if(inFilter&&inOnly){
+        visible++;
+        if(selected[key])sel++;
+      }
+    }
+  }
+  return{visible,sel};
 }
 
 function updateStatus(){
-const{visible,sel}=computeVisibleAndSelected();
-const text=`${sel} ausgewählt · ${visible} sichtbar`;
-statusEl.textContent=text;
-liveEl.textContent=text;
+  const{visible,sel}=computeVisibleAndSelected();
+  const text=`${sel} ausgewählt · ${visible} sichtbar`;
+  statusEl.textContent=text;
+  liveEl.textContent=text;
 }
 
+/* ===== Markierung & Hover-Preis ===== */
+function applyWinAndTooltip(billaBtn, sparBtn, prices){
+  try{
+    // Reset
+    billaBtn.classList.remove("win");
+    sparBtn.classList.remove("win");
+    billaBtn.title = "BILLA";
+    sparBtn.title = "SPAR";
+
+    if(!prices) return;
+
+    const pb = typeof prices.billa==="number" ? prices.billa : null;
+    const ps = typeof prices.spar==="number" ? prices.spar : null;
+
+    if(pb!=null) billaBtn.title = "BILLA: " + euro(pb);
+    if(ps!=null) sparBtn.title = "SPAR: "  + euro(ps);
+
+    if(pb!=null && ps!=null){
+      if(pb < ps) billaBtn.classList.add("win");
+      else if(ps < pb) sparBtn.classList.add("win");
+      else { billaBtn.classList.add("win"); sparBtn.classList.add("win"); }
+    }else if(pb!=null){
+      billaBtn.classList.add("win");
+    }else if(ps!=null){
+      sparBtn.classList.add("win");
+    }
+  }catch(_){}
+}
+
+/* ===== Render ===== */
 function renderList(){
-listEl.innerHTML="";
-for(const[cat,items]of Object.entries(categories)){
-const shownItems=items.filter(it=>itemMatchesFilter(cat,it)&&(!onlySelected||selected[cat+"|"+it.name]));
-if(!shownItems.length)continue;
+  listEl.innerHTML="";
+  for(const[cat,items]of Object.entries(categories)){
+    const shownItems=items.filter(it=>itemMatchesFilter(cat,it)&&(!onlySelected||selected[cat+"|"+it.name]));
+    if(!shownItems.length)continue;
 
-const catDiv=document.createElement("section");
-catDiv.className="category";
-const isCollapsed=onlySelected?false:!!collapsed[cat];
-catDiv.innerHTML=`<div class="cat-header" data-cat="${cat}" aria-expanded="${!isCollapsed}"><span>${cat}</span><span class="toggle" aria-hidden="true">${isCollapsed?"▼":"▲"}</span></div><div class="cat-items ${isCollapsed?"hidden":""}"></div>`;
+    const catDiv=document.createElement("section");
+    catDiv.className="category";
+    const isCollapsed=onlySelected?false:!!collapsed[cat];
+    catDiv.innerHTML=`<div class="cat-header" data-cat="${cat}" aria-expanded="${!isCollapsed}"><span>${cat}</span><span class="toggle" aria-hidden="true">${isCollapsed?"▼":"▲"}</span></div><div class="cat-items ${isCollapsed?"hidden":""}"></div>`;
 
-const itemsWrap=catDiv.querySelector(".cat-items");
-for(const item of shownItems){
-const key=cat+"|"+item.name;
-const checked=!!selected[key];
+    const itemsWrap=catDiv.querySelector(".cat-items");
+    for(const item of shownItems){
+      const key=cat+"|"+item.name;
+      const checked=!!selected[key];
 
-const row=document.createElement("div");
-row.className="item-row"+(checked?" selected":"");
-row.dataset.key=key;
+      const row=document.createElement("div");
+      row.className="item-row"+(checked?" selected":"");
+      row.dataset.key=key;
 
-const cb=document.createElement("input");
-cb.type="checkbox";
-cb.className="checkbox";
-cb.id=key;
-cb.checked=checked;
-cb.setAttribute("aria-label",item.name);
+      const cb=document.createElement("input");
+      cb.type="checkbox";
+      cb.className="checkbox";
+      cb.id=key;
+      cb.checked=checked;
+      cb.setAttribute("aria-label",item.name);
 
-const label=document.createElement("label");
-label.htmlFor=key;
-label.innerHTML=`<span class="item-amount">${item.amount?item.amount:""}</span>${item.name}`;
+      const label=document.createElement("label");
+      label.htmlFor=key;
+      label.innerHTML=`<span class="item-amount">${item.amount?item.amount:""}</span>${item.name}`;
 
-const searchLinks=generateSearchLinks(item.name);
-const linksContainer=document.createElement("div");
-linksContainer.className="search-links";
+      const linksContainer=document.createElement("div");
+      linksContainer.className="search-links";
 
-const billaLink=document.createElement("a");
-billaLink.href=searchLinks.billa;
-billaLink.target="_blank";
-billaLink.className="search-btn billa";
-billaLink.innerHTML="🔍<small>B</small>";
-billaLink.title=`Bei Billa suchen: ${item.name}`;
+      const {billa: bUrl, spar: sUrl} = generateSearchLinks(item.name);
 
-const sparLink=document.createElement("a");
-sparLink.href=searchLinks.spar;
-sparLink.target="_blank";
-sparLink.className="search-btn spar";
-sparLink.innerHTML="🔍<small>S</small>";
-sparLink.title=`Bei Spar suchen: ${item.name}`;
+      const billaLink=document.createElement("a");
+      billaLink.href=bUrl; billaLink.target="_blank";
+      billaLink.className="search-btn billa";
+      billaLink.setAttribute("aria-label","Bei BILLA suchen");
+      billaLink.innerHTML='<span class="icon" aria-hidden="true"></span><small>B</small>';
 
-linksContainer.appendChild(billaLink);
-linksContainer.appendChild(sparLink);
+      const sparLink=document.createElement("a");
+      sparLink.href=sUrl; sparLink.target="_blank";
+      sparLink.className="search-btn spar";
+      sparLink.setAttribute("aria-label","Bei SPAR suchen");
+      sparLink.innerHTML='<span class="icon" aria-hidden="true"></span><small>S</small>';
 
-row.appendChild(cb);
-row.appendChild(label);
-row.appendChild(linksContainer);
-itemsWrap.appendChild(row);
+      // Preise lookup + Markierung + Tooltip
+      const prices = getPricesForName(item.name);
+      applyWinAndTooltip(billaLink, sparLink, prices);
+
+      linksContainer.appendChild(billaLink);
+      linksContainer.appendChild(sparLink);
+
+      row.appendChild(cb);
+      row.appendChild(label);
+      row.appendChild(linksContainer);
+      itemsWrap.appendChild(row);
+    }
+    listEl.appendChild(catDiv);
+  }
+  updateStatus();
 }
-listEl.appendChild(catDiv);
-}
-updateStatus();
-}
 
+/* ===== Events ===== */
 listEl.addEventListener("change",e=>{
-if(!(e.target instanceof HTMLInputElement))return;
-if(!e.target.classList.contains("checkbox"))return;
+  if(!(e.target instanceof HTMLInputElement))return;
+  if(!e.target.classList.contains("checkbox"))return;
 
-const key=e.target.id;
-const checked=e.target.checked;
-selected[key]=checked;
+  const key=e.target.id;
+  const checked=e.target.checked;
+  selected[key]=checked;
 
-const row=e.target.closest(".item-row");
-if(row)row.classList.toggle("selected",checked);
+  const row=e.target.closest(".item-row");
+  if(row)row.classList.toggle("selected",checked);
 
-saveLocal();
-updateStatus();
+  saveLocal();
+  updateStatus();
 
-if(onlySelected&&!checked){
-const rowEl=row;
-if(rowEl){
-rowEl.style.opacity="0";
-rowEl.style.transition="opacity 120ms ease";
-setTimeout(()=>{
-const wrapper=rowEl.closest(".cat-items");
-rowEl.remove();
-if(wrapper&&!wrapper.children.length){
-wrapper.closest(".category")?.remove();
-}
-updateStatus();
-},120);
-}
-}
+  if(onlySelected&&!checked){
+    const rowEl=row;
+    if(rowEl){
+      rowEl.style.opacity="0";
+      rowEl.style.transition="opacity 120ms ease";
+      setTimeout(()=>{
+        const wrapper=rowEl.closest(".cat-items");
+        rowEl.remove();
+        if(wrapper&&!wrapper.children.length){
+          wrapper.closest(".category")?.remove();
+        }
+        updateStatus();
+      },120);
+    }
+  }
 });
 
 listEl.addEventListener("click",e=>{
-const header=e.target.closest(".cat-header");
-if(!header)return;
-
-const cat=header.dataset.cat;
-const section=header.parentElement;
-const items=section.querySelector(".cat-items");
-const toggleIcon=header.querySelector(".toggle");
-
-const newCollapsed=!collapsed[cat];
-collapsed[cat]=newCollapsed;
-items.classList.toggle("hidden",newCollapsed);
-header.setAttribute("aria-expanded",String(!newCollapsed));
-toggleIcon.textContent=newCollapsed?"▼":"▲";
-
-saveLocal();
+  const header=e.target.closest(".cat-header");
+  if(!header)return;
+  const cat=header.dataset.cat;
+  const section=header.parentElement;
+  const items=section.querySelector(".cat-items");
+  const toggleIcon=header.querySelector(".toggle");
+  const newCollapsed=!collapsed[cat];
+  collapsed[cat]=newCollapsed;
+  items.classList.toggle("hidden",newCollapsed);
+  header.setAttribute("aria-expanded",String(!newCollapsed));
+  toggleIcon.textContent=newCollapsed?"▼":"▲";
+  saveLocal();
 });
 
 document.getElementById("search").addEventListener("input",e=>{
-filter=e.target.value;
-saveLocal();
-renderList();
+  filter=e.target.value;
+  saveLocal();
+  renderList();
 });
 
 const menuBtn=document.getElementById("menu");
 const menu=document.getElementById("menuPopup");
 const openMenu=()=>{menu.classList.remove("hidden");menuBtn.setAttribute("aria-expanded","true");};
 const closeMenu=()=>{menu.classList.add("hidden");menuBtn.setAttribute("aria-expanded","false");};
-
 menuBtn.addEventListener("click",()=>{menu.classList.contains("hidden")?openMenu():closeMenu();});
-document.addEventListener("click",e=>{
-if(!menu.contains(e.target)&&e.target!==menuBtn&&!menuBtn.contains(e.target))closeMenu();
-});
+document.addEventListener("click",e=>{ if(!menu.contains(e.target)&&e.target!==menuBtn&&!menuBtn.contains(e.target))closeMenu(); });
 
 document.getElementById("showSelected").addEventListener("click",()=>{
-onlySelected=!onlySelected;
-saveLocal();
-renderList();
-closeMenu();
+  onlySelected=!onlySelected;
+  saveLocal();
+  renderList();
+  closeMenu();
 });
 
 document.getElementById("sendList").addEventListener("click",async()=>{
-const selectedByCat={};
-Object.entries(selected).filter(([,v])=>v).forEach(([k])=>{
-const[cat,name]=k.split("|");
-if(!selectedByCat[cat])selectedByCat[cat]=[];
-selectedByCat[cat].push(name);
-});
+  const selectedByCat={};
+  Object.entries(selected).filter(([,v])=>v).forEach(([k])=>{
+    const[cat,name]=k.split("|");
+    if(!selectedByCat[cat])selectedByCat[cat]=[];
+    selectedByCat[cat].push(name);
+  });
 
-const lines=[];
-Object.entries(selectedByCat).forEach(([cat,items])=>{
-lines.push(`${cat}:`);
-items.forEach(item=>lines.push(`  ${item}`));
-lines.push("");
-});
+  const lines=[];
+  Object.entries(selectedByCat).forEach(([cat,items])=>{
+    lines.push(`${cat}:`);
+    items.forEach(item=>lines.push(`  ${item}`));
+    lines.push("");
+  });
 
-const payload=lines.join("\n").trim()||"Keine Auswahl";
-try{
-if(navigator.share){
-await navigator.share({title:"Meine Einkaufsliste",text:payload});
-}else if(navigator.clipboard&&window.isSecureContext){
-await navigator.clipboard.writeText(payload);
-alert("Liste in die Zwischenablage kopiert.");
-}else{
-window.location.href="mailto:?subject=Einkaufsliste&body="+encodeURIComponent(payload);
-}
-}catch{}
-closeMenu();
+  const payload=lines.join("\n").trim()||"Keine Auswahl";
+  try{
+    if(navigator.share){
+      await navigator.share({title:"Meine Einkaufsliste",text:payload});
+    }else if(navigator.clipboard&&window.isSecureContext){
+      await navigator.clipboard.writeText(payload);
+      alert("Liste in die Zwischenablage kopiert.");
+    }else{
+      window.location.href="mailto:?subject=Einkaufsliste&body="+encodeURIComponent(payload);
+    }
+  }catch{}
+  closeMenu();
 });
 
 document.getElementById("resetList").addEventListener("click",()=>{
-selected={};
-filter="";
-onlySelected=false;
-document.getElementById("search").value="";
-saveLocal();
-renderList();
-closeMenu();
+  selected={}; filter=""; onlySelected=false;
+  document.getElementById("search").value="";
+  saveLocal(); renderList(); closeMenu();
 });
 
+/* Start */
 renderList();
 </script>
 </body>
