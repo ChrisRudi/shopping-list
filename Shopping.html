@@ -26,15 +26,15 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 .menu-btn:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in oklab,var(--f),transparent 70%);border-color:var(--f)}
 .menu-btn:hover{background:color-mix(in oklab,var(--c),var(--a) 12%);border-color:var(--a)}
 .menu-toggle{width:var(--ts);height:var(--ts);display:grid;place-items:center;padding:0;line-height:1}
-.category{background:var(--c);border-radius:10px;margin:0 12px 12px;border:1px solid var(--b);overflow:clip}
+.category{background:var(--c);border-radius:10px;margin:0 4px 12px;border:1px solid var(--b);overflow:clip}
 .cat-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;color:var(--a);font-size:1.05rem;font-weight:650;user-select:none;cursor:pointer;min-height:var(--ts)}
 .cat-header .toggle{font-size:1.2rem;color:var(--m)}
-.cat-items{padding:2px 14px 6px 20px}
-.item-row{display:grid;grid-template-columns:var(--ts) 1fr auto;align-items:center;gap:10px;border-bottom:1px solid var(--b);min-height:var(--rh);height:var(--rh);will-change:background-color}
+.cat-items{padding:2px 14px 6px 14px}
+.item-row{display:grid;grid-template-columns:var(--ts) 1fr auto;align-items:center;gap:10px;border-bottom:1px solid var(--b);min-height:var(--rh);padding:8px 0;will-change:background-color}
 .item-row:last-child{border-bottom:none}
 .item-row.selected{background:color-mix(in oklab,var(--as),white 75%);color:#0c0c0c}
-.item-row label{display:flex;flex-direction:column;cursor:pointer;font-size:1.12rem;line-height:1.15;padding:8px 0}
-.item-amount{color:var(--m);font-size:1.02rem;align-self:flex-end}
+.item-row label{display:flex;justify-content:space-between;align-items:baseline;cursor:pointer;font-size:1.12rem;line-height:1.3;gap:8px;max-height:calc(2*1.3em);overflow:hidden;text-overflow:ellipsis}
+.item-amount{color:var(--m);font-size:0.95rem;flex-shrink:0;white-space:nowrap}
 .checkbox{appearance:none;-webkit-appearance:none;inline-size:var(--ts);block-size:var(--ts);min-width:var(--ts);min-height:var(--ts);display:grid;place-items:center;border-radius:50%;border:2px solid var(--a);background:var(--c);cursor:pointer;position:relative;margin:0;transition:background-color 120ms ease,border-color 120ms ease}
 .checkbox:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in oklab,var(--f),transparent 70%);border-color:var(--f)}
 .checkbox:checked{background:var(--a);border-color:var(--as)}
@@ -388,7 +388,7 @@ function renderList(){
 
       const label=document.createElement("label");
       label.htmlFor=key;
-      label.innerHTML=`${item.name}<span class="item-amount">${item.amount?item.amount:""}</span>`;
+      label.innerHTML=`<span>${item.name}</span>${item.amount?`<span class="item-amount">${item.amount}</span>`:""}`;
 
       const linksContainer=document.createElement("div");
       linksContainer.className="search-links";
