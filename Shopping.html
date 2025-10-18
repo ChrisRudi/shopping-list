@@ -33,8 +33,8 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 .item-row{display:grid;grid-template-columns:var(--ts) 1fr auto;align-items:center;gap:10px;border-bottom:1px solid var(--b);min-height:var(--rh);height:var(--rh);will-change:background-color}
 .item-row:last-child{border-bottom:none}
 .item-row.selected{background:color-mix(in oklab,var(--as),white 75%);color:#0c0c0c}
-.item-row label{display:block;cursor:pointer;font-size:1.12rem;line-height:1.15;padding:8px 0}
-.item-amount{color:var(--m);font-size:1.02rem;margin-right:8px}
+.item-row label{display:flex;flex-direction:column;cursor:pointer;font-size:1.12rem;line-height:1.15;padding:8px 0}
+.item-amount{color:var(--m);font-size:1.02rem;align-self:flex-end}
 .checkbox{appearance:none;-webkit-appearance:none;inline-size:var(--ts);block-size:var(--ts);min-width:var(--ts);min-height:var(--ts);display:grid;place-items:center;border-radius:50%;border:2px solid var(--a);background:var(--c);cursor:pointer;position:relative;margin:0;transition:background-color 120ms ease,border-color 120ms ease}
 .checkbox:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in oklab,var(--f),transparent 70%);border-color:var(--f)}
 .checkbox:checked{background:var(--a);border-color:var(--as)}
@@ -388,7 +388,7 @@ function renderList(){
 
       const label=document.createElement("label");
       label.htmlFor=key;
-      label.innerHTML=`<span class="item-amount">${item.amount?item.amount:""}</span>${item.name}`;
+      label.innerHTML=`${item.name}<span class="item-amount">${item.amount?item.amount:""}</span>`;
 
       const linksContainer=document.createElement("div");
       linksContainer.className="search-links";
