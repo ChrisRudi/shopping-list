@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<!-- Shopping.html -->
+<!-- Shopping.html v2.0 -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#15d6e1">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
 <title>Keto Einkaufsliste</title>
 <style>
 :root{--a:#15d6e1;--as:#30e5ec;--bg:#181c22;--c:#23273a;--t:#fff;--m:#91a0b5;--b:#2a2f49;--f:#7ef0f6;--rh:64px;--ts:48px;--r:12px;--ok:#1a7f37}
@@ -18,7 +21,7 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 #search{width:100%;padding:12px 14px;background:var(--c);border-radius:10px;border:1px solid var(--b);color:var(--t);font-size:1.05rem;outline:none}
 #search::placeholder{color:var(--m)}
 #search:focus{border-color:var(--f);box-shadow:0 0 0 3px color-mix(in oklab,var(--f),transparent 80%)}
-.menu{display:flex;justify-content:center;gap:12px;margin-bottom:8px}
+.menu{display:flex;justify-content:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
 .menu-btn{background:var(--c);color:var(--t);border:1px solid var(--b);padding:10px 14px;border-radius:10px;font-size:1.05rem;cursor:pointer;touch-action:manipulation;min-width:var(--ts);min-height:var(--ts);transition:transform .06s ease-out,background .15s,border-color .15s}
 .menu-btn:active{transform:scale(.98);background:color-mix(in oklab,var(--c),var(--a) 12%);border-color:var(--a)}
 .menu-toggle{width:var(--ts);height:var(--ts);display:grid;place-items:center;padding:0;line-height:1}
@@ -44,13 +47,18 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 .search-btn.spar{border-color:#0066cc}
 .search-btn.billa:hover{background:#e53e3e;border-color:#e53e3e;color:#fff}
 .search-btn.spar:hover{background:#0066cc;border-color:#0066cc;color:#fff}
-/* Lupe als einfärbbare Masken-Icon, damit wir "grün" setzen können */
 .icon{inline-size:14px;block-size:14px;background:var(--icon)}
-.icon{mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M21 20.3 16.6 15.9a8 8 0 1 0-.7.7L20.3 21 21 20.3zM10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z"/></svg>') center/contain no-repeat;-webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M21 20.3 16.6 15.9a8 8 0 1 0-.7.7L20.3 21 21 20.3zM10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z"/></svg>') center/contain no-repeat}
+.icon{mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M21 20.3 16.6 15.9a8 8 0 1 0-.7.7L20.3 21 21 20.3zM10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z"/></svg>') center/contain no-repeat;-webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M21 20.3 16.6 15.9a8 8 8 0 1 0-.7.7L20.3 21 21 20.3zM10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z"/></svg>') center/contain no-repeat}
 .search-btn.win{--icon:var(--ok);border-color:var(--ok);box-shadow:0 0 0 2px color-mix(in oklab,var(--ok),transparent 70%) inset}
 .status-wrap{position:fixed;left:0;right:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);z-index:50}
 .status-bar{background:var(--c);color:var(--a);font-weight:650;text-align:center;padding:12px 0;font-size:1.05rem;border-top:1px solid var(--b)}
 .sr-live{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* iOS Hint minimal styling injected via JS; kept here for non-FOUT */
+.install-hint{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000}
+.install-hint .card{background:#23273a;border:1px solid #2a2f49;border-radius:12px;max-width:420px;padding:16px;color:#fff}
+.install-hint h2{margin:0 0 8px 0;font-size:1.2rem;color:#15d6e1}
+.install-hint p{margin:6px 0}
+.install-hint button{margin-top:10px}
 @media (max-width:420px){h1{font-size:1.45rem}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
@@ -63,6 +71,8 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 <button class="menu-btn menu-toggle" id="menu" aria-haspopup="true" aria-expanded="false">⋯</button>
 </div>
 <div class="menu hidden" id="menuPopup" role="menu">
+<button class="menu-btn" id="installPWA" role="menuitem">Installieren</button>
+<button class="menu-btn" id="downloadShortcut" role="menuitem">Desktop-Verknüpfung laden</button>
 <button class="menu-btn" id="showSelected" role="menuitem">Nur Auswahl</button>
 <button class="menu-btn" id="sendList" role="menuitem">Auswahl senden</button>
 <button class="menu-btn" id="resetList" role="menuitem">Zurücksetzen</button>
@@ -76,8 +86,6 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 <div class="status-bar" id="statusBar">0 ausgewählt · 0 sichtbar</div>
 </div>
 
-<!-- Eingebettete Preis-Daten: key = normalisierter Suchbegriff (aus Produktname berechnet). 
-     Beispielwerte – erweitere/aktualisiere nach Bedarf. -->
 <script id="prices-data" type="application/json">
 [
   { "key": "brokkoli",              "billa": 2.49, "spar": 2.39 },
@@ -222,7 +230,7 @@ function optimizeSearchTerm(productName){
     .replace(/extra\s+vergine/gi,"")
     .replace(/frisch\s*$/gi,"")
     .replace(/\s*oder\s+.*/gi,"")
-    .replace(/,.*$/,"")
+    .replace(/,.*/,"")
     .trim();
 }
 function euro(n){
@@ -312,12 +320,10 @@ function updateStatus(){
 /* ===== Markierung & Hover-Preis ===== */
 function applyWinAndTooltip(billaBtn, sparBtn, prices){
   try{
-    // Reset
     billaBtn.classList.remove("win");
     sparBtn.classList.remove("win");
     billaBtn.title = "BILLA";
     sparBtn.title = "SPAR";
-
     if(!prices) return;
 
     const pb = typeof prices.billa==="number" ? prices.billa : null;
@@ -387,7 +393,6 @@ function renderList(){
       sparLink.setAttribute("aria-label","Bei SPAR suchen");
       sparLink.innerHTML='<span class="icon" aria-hidden="true"></span><small>S</small>';
 
-      // Preise lookup + Markierung + Tooltip
       const prices = getPricesForName(item.name);
       applyWinAndTooltip(billaLink, sparLink, prices);
 
@@ -509,5 +514,6 @@ document.getElementById("resetList").addEventListener("click",()=>{
 /* Start */
 renderList();
 </script>
+<script src="install.js" defer></script>
 </body>
 </html>
