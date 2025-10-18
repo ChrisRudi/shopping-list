@@ -27,3 +27,12 @@ Hinweise
 - Firefox Desktop bietet derzeit keinen standardisierten Install-Dialog; verwenden Sie dort die Downloads.
 - Service Worker greift nur über HTTPS (oder localhost).
 - Icons können beliebig ersetzt werden (PNG). Größen: 192, 512.
+
+
+Plattformlogik
+--------------
+- Android (Chromium): zeigt nur 'Installieren'.
+- iOS (Safari): zeigt nur 'Installieren' (oeffnet Anleitung).
+- Windows/Linux (Chromium): zeigt 'Installieren' und 'Desktop-Verknuepfung laden'.
+- macOS: Chromium zeigt beides; Safari nur Desktop-Verknuepfung.
+- Firefox: Desktop-Verknuepfung; kein PWA-Dialog.

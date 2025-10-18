@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Shopping.html v2.0 -->
+<!-- Shopping.html v2.1 -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -21,11 +21,11 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 #search{width:100%;padding:12px 14px;background:var(--c);border-radius:10px;border:1px solid var(--b);color:var(--t);font-size:1.05rem;outline:none}
 #search::placeholder{color:var(--m)}
 #search:focus{border-color:var(--f);box-shadow:0 0 0 3px color-mix(in oklab,var(--f),transparent 80%)}
-.menu{display:flex;justify-content:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
-.menu-btn{background:var(--c);color:var(--t);border:1px solid var(--b);padding:10px 14px;border-radius:10px;font-size:1.05rem;cursor:pointer;touch-action:manipulation;min-width:var(--ts);min-height:var(--ts);transition:transform .06s ease-out,background .15s,border-color .15s}
-.menu-btn:active{transform:scale(.98);background:color-mix(in oklab,var(--c),var(--a) 12%);border-color:var(--a)}
-.menu-toggle{width:var(--ts);height:var(--ts);display:grid;place-items:center;padding:0;line-height:1}
+.menu{display:grid;grid-template-columns:repeat(5,48px);justify-content:center;gap:10px;margin-bottom:8px;padding:4px 0}
+.menu-btn{background:var(--c);color:var(--t);border:1px solid var(--b);border-radius:10px;cursor:pointer;touch-action:manipulation;inline-size:48px;block-size:48px;display:grid;place-items:center;transition:transform .06s ease-out,background .15s,border-color .15s, box-shadow .15s}
 .menu-btn:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in oklab,var(--f),transparent 70%);border-color:var(--f)}
+.menu-btn:hover{background:color-mix(in oklab,var(--c),var(--a) 12%);border-color:var(--a)}
+.menu-toggle{width:var(--ts);height:var(--ts);display:grid;place-items:center;padding:0;line-height:1}
 .category{background:var(--c);border-radius:10px;margin:0 12px 12px;border:1px solid var(--b);overflow:clip}
 .cat-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;color:var(--a);font-size:1.05rem;font-weight:650;user-select:none;cursor:pointer;min-height:var(--ts)}
 .cat-header .toggle{font-size:1.2rem;color:var(--m)}
@@ -48,18 +48,32 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 .search-btn.billa:hover{background:#e53e3e;border-color:#e53e3e;color:#fff}
 .search-btn.spar:hover{background:#0066cc;border-color:#0066cc;color:#fff}
 .icon{inline-size:14px;block-size:14px;background:var(--icon)}
-.icon{mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M21 20.3 16.6 15.9a8 8 0 1 0-.7.7L20.3 21 21 20.3zM10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z"/></svg>') center/contain no-repeat;-webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M21 20.3 16.6 15.9a8 8 8 0 1 0-.7.7L20.3 21 21 20.3zM10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z"/></svg>') center/contain no-repeat}
+.icon{mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M21 20.3 16.6 15.9a8 8 0 1 0-.7.7L20.3 21 21 20.3zM10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z"/></svg>') center/contain no-repeat;-webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M21 20.3 16.6 15.9a8 8 0 1 0-.7.7L20.3 21 21 20.3zM10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z"/></svg>') center/contain no-repeat}
 .search-btn.win{--icon:var(--ok);border-color:var(--ok);box-shadow:0 0 0 2px color-mix(in oklab,var(--ok),transparent 70%) inset}
 .status-wrap{position:fixed;left:0;right:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);z-index:50}
 .status-bar{background:var(--c);color:var(--a);font-weight:650;text-align:center;padding:12px 0;font-size:1.05rem;border-top:1px solid var(--b)}
 .sr-live{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-/* iOS Hint minimal styling injected via JS; kept here for non-FOUT */
+
+/* Icon-only menu buttons */
+.ico{inline-size:22px;block-size:22px;background:#d0d7e5}
+.ico{mask:center/contain no-repeat;-webkit-mask:center/contain no-repeat}
+.btn-install .ico{mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox=\'0 0 24 24\'><path d=\'M12 3v10l3.5-3.5 1.4 1.4L12 17.3 7.1 10.9 8.5 9.5 12 13V3h0Z\'/><path d=\'M4 19h16v2H4z\'/></svg>')}
+.btn-shortcut .ico{mask-image:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M5 3h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-6l-4 4v-4H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z\"></path></svg>')}
+.btn-selected .ico{mask-image:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Zm9-3.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z\"></path></svg>')}
+.btn-share .ico{mask-image:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M4 12l16-8-6 16-2-6-8-2Z\"></path></svg>')}
+.btn-reset .ico{mask-image:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M12 6V3l-4 4 4 4V8a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7Z\"></path></svg>')}
+
+/* iOS hint */
 .install-hint{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000}
 .install-hint .card{background:#23273a;border:1px solid #2a2f49;border-radius:12px;max-width:420px;padding:16px;color:#fff}
 .install-hint h2{margin:0 0 8px 0;font-size:1.2rem;color:#15d6e1}
 .install-hint p{margin:6px 0}
 .install-hint button{margin-top:10px}
-@media (max-width:420px){h1{font-size:1.45rem}}
+
+@media (max-width:420px){
+  h1{font-size:1.45rem}
+  .menu{grid-template-columns:repeat(5,48px)}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -68,14 +82,14 @@ h1{color:var(--a);font-size:1.6rem;font-weight:700;margin:0 0 8px 0}
 <h1>Keto Einkaufsliste</h1>
 <div class="search-bar">
 <input id="search" type="search" placeholder="Artikel/Kategorie suchen…" autocomplete="off" enterkeyhint="search">
-<button class="menu-btn menu-toggle" id="menu" aria-haspopup="true" aria-expanded="false">⋯</button>
+<button class="menu-btn menu-toggle" id="menu" aria-haspopup="true" aria-expanded="false" title="Menü">⋯</button>
 </div>
-<div class="menu hidden" id="menuPopup" role="menu">
-<button class="menu-btn" id="installPWA" role="menuitem">Installieren</button>
-<button class="menu-btn" id="downloadShortcut" role="menuitem">Desktop-Verknüpfung laden</button>
-<button class="menu-btn" id="showSelected" role="menuitem">Nur Auswahl</button>
-<button class="menu-btn" id="sendList" role="menuitem">Auswahl senden</button>
-<button class="menu-btn" id="resetList" role="menuitem">Zurücksetzen</button>
+<div class="menu hidden" id="menuPopup" role="menu" aria-label="Aktionen">
+  <button class="menu-btn btn-install" id="installPWA" role="menuitem" aria-label="Installieren" title="Installieren"><span class="ico" aria-hidden="true"></span></button>
+  <button class="menu-btn btn-shortcut" id="downloadShortcut" role="menuitem" aria-label="Desktop-Verknüpfung" title="Desktop-Verknüpfung"><span class="ico" aria-hidden="true"></span></button>
+  <button class="menu-btn btn-selected" id="showSelected" role="menuitem" aria-label="Nur Auswahl" title="Nur Auswahl"><span class="ico" aria-hidden="true"></span></button>
+  <button class="menu-btn btn-share" id="sendList" role="menuitem" aria-label="Auswahl senden" title="Auswahl senden"><span class="ico" aria-hidden="true"></span></button>
+  <button class="menu-btn btn-reset" id="resetList" role="menuitem" aria-label="Zurücksetzen" title="Zurücksetzen"><span class="ico" aria-hidden="true"></span></button>
 </div>
 </header>
 
